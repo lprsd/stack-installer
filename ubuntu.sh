@@ -176,6 +176,12 @@ sudo -u postgres psql -c "CREATE DATABASE jesse_db;" || log_error "Failed to cre
 sudo -u postgres psql -c "CREATE USER jesse_user WITH PASSWORD 'password123';" || log_error "Failed to create database user"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE jesse_db TO jesse_user;" || log_error "Failed to grant privileges"
 
+# Additional permissions needed for PostgreSQL 15 (Ubuntu 24.04)
+if [[ "$UBUNTU_VERSION" == "24.04" ]]; then
+    sudo -u postgres psql -d jesse_db -c "GRANT ALL ON SCHEMA public TO jesse_user;" || log_error "Failed to grant schema permissions"
+    sudo -u postgres psql -d jesse_db -c "ALTER DATABASE jesse_db OWNER TO jesse_user;" || log_error "Failed to change database owner"
+fi
+
 # Verify PostgreSQL
 if ! systemctl is-active --quiet postgresql; then
     log_error "PostgreSQL service is not running"
